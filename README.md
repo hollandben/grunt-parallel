@@ -46,6 +46,17 @@ grunt.initConfig({
         },
         tasks: ['fast', 'block', 'fast']
       },
+      gruntArgz: {
+        options: {
+          grunt: true
+        },
+        tasks: [{
+          cmd: 'fast',
+          argz: [{
+            key: 'value'
+          }]
+        }]
+      },
       stream: {
         options: {
           stream: true
@@ -118,6 +129,28 @@ grunt.initConfig({
 ```
 
 One might target the task using `grunt parallel:assets`. This would run compass, requirejs, and a custom shell script at the same time, each logging to your console when they are done.
+
+__Adding Arguments__
+
+If you require grunt arguments to be passed to a grunt task, you can use the `argz` parameter, which is a key/value object where the output would be: `grunt task --key=value`
+
+```javascript
+grunt.initConfig({
+  parallel: {
+    assets: {
+      options: {
+        grunt: true
+      },
+      tasks: [{
+        cmd: 'fast',
+        argz: [{
+          key: 'value'
+        }]
+      }]
+    }
+  }
+});
+```
 
 ## License
 Copyright (c) 2013 Merrick Christensen
