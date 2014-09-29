@@ -22,7 +22,7 @@ module.exports = function(grunt) {
 
         grunt.log.error(message);
         lpad.stdout();
-        
+
         return deferred.reject();
       }
 
@@ -39,14 +39,31 @@ module.exports = function(grunt) {
     var done = this.async();
     var options = this.options({
       grunt: false,
-      stream: false 
+      stream: false
     });
-    
+
+    var buildArgz = function(obj) {
+      var str = '';
+
+      for (var key in obj) {
+        str += '--' + key + '=' + obj[key];
+      }
+
+      return str;
+    };
+
     // If the configuration specifies that the task is a grunt task. Make it so.
     if (options.grunt === true) {
       this.data.tasks = this.data.tasks.map(function(task) {
+        var cmd = task.cmd ? task.cmd : task;
+        var argz = [];
+
+        if (task.argz) {
+          argz.push(buildArgz(task.argz));
+        }
+
         return {
-          args: [task],
+          args: [cmd].concat(argz),
           grunt: true
         }
       });
