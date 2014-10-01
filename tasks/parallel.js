@@ -7,94 +7,94 @@
  */
 /*jshint es5:true*/
 module.exports = function(grunt) {
-  var Q = require('q');
-  var lpad = require('lpad');
+    var Q = require('q');
+    var lpad = require('lpad');
 
-  function spawn(task) {
-    var deferred = Q.defer();
+    function spawn(task) {
+        var deferred = Q.defer();
 
-    grunt.util.spawn(task, function(error, result, code) {
-      grunt.log.writeln();
-      lpad.stdout('    ');
+        grunt.util.spawn(task, function(error, result, code) {
+            grunt.log.writeln();
+            lpad.stdout('    ');
 
-      if (error || code !== 0) {
-        var message = result.stderr || result.stdout;
+            if (error || code !== 0) {
+                var message = result.stderr || result.stdout;
 
-        grunt.log.error(message);
-        lpad.stdout();
+                grunt.log.error(message);
+                lpad.stdout();
 
-        return deferred.reject();
-      }
+                return deferred.reject();
+            }
 
-      grunt.log.writeln(result);
-      lpad.stdout();
+            grunt.log.writeln(result);
+            lpad.stdout();
 
-      deferred.resolve();
-    });
+            deferred.resolve();
+        });
 
-    return deferred.promise;
-  }
-
-  grunt.registerMultiTask('parallel', 'Run sub-tasks in parallel.', function() {
-    var done = this.async();
-    var options = this.options({
-      grunt: false,
-      stream: false
-    });
-
-    var buildArgz = function(obj) {
-      var argz = [];
-
-      for (var key in obj) {
-        argz.push('--' + key + '=' + obj[key]);
-      }
-
-      return argz.join(' ');
-    };
-
-    // If the configuration specifies that the task is a grunt task. Make it so.
-    if (options.grunt === true) {
-      this.data.tasks = this.data.tasks.map(function(task) {
-        var cmd = task.cmd ? task.cmd : task;
-        var argz = [];
-
-        if (task.argz) {
-          argz.push(buildArgz(task.argz));
-        }
-
-        return {
-          args: [cmd].concat(argz),
-          grunt: true
-        }
-      });
+        return deferred.promise;
     }
 
-    // Normalize tasks config.
-    this.data.tasks = this.data.tasks.map(function(task) {
+    grunt.registerMultiTask('parallel', 'Run sub-tasks in parallel.', function() {
+        var done = this.async();
+        var options = this.options({
+            grunt: false,
+            stream: false
+        });
 
-      // Default to grunt it a command isn't specified
-      if ( ! task.cmd ) {
-        task.grunt = true;
-      }
+        var buildArgz = function(obj) {
+            var argz = [];
 
-      // Pipe to the parent stdout when streaming.
-      if ( task.stream || ( task.stream === undefined && options.stream ) ) {
-        task.opts = task.opts || {};
-        task.opts.stdio = 'inherit';
-      }
+            for (var key in obj) {
+                argz.push('--' + key + '=' + obj[key]);
+            }
 
-      return task;
-    });
+            return argz;
+        };
 
-    // Pass verbose flag to spawned tasks
-    if (grunt.option('verbose')) {
-      this.data.tasks.forEach(function(task) {
-        if (task.grunt) {
-          task.args.push('--verbose');
+        // If the configuration specifies that the task is a grunt task. Make it so.
+        if (options.grunt === true) {
+            this.data.tasks = this.data.tasks.map(function(task) {
+                var cmd = task.cmd ? task.cmd : task;
+                var argz = [];
+
+                if (task.argz) {
+                    argz = buildArgz(task.argz);
+                }
+
+                return {
+                    args: [cmd].concat(argz),
+                    grunt: true
+                }
+            });
         }
-      });
-    }
 
-    Q.all(this.data.tasks.map(spawn)).then(done, done.bind(this, false));
-  });
+        // Normalize tasks config.
+        this.data.tasks = this.data.tasks.map(function(task) {
+
+            // Default to grunt it a command isn't specified
+            if (!task.cmd) {
+                task.grunt = true;
+            }
+
+            // Pipe to the parent stdout when streaming.
+            if (task.stream || (task.stream === undefined && options.stream)) {
+                task.opts = task.opts || {};
+                task.opts.stdio = 'inherit';
+            }
+
+            return task;
+        });
+
+        // Pass verbose flag to spawned tasks
+        if (grunt.option('verbose')) {
+            this.data.tasks.forEach(function(task) {
+                if (task.grunt) {
+                    task.args.push('--verbose');
+                }
+            });
+        }
+
+        Q.all(this.data.tasks.map(spawn)).then(done, done.bind(this, false));
+    });
 };
