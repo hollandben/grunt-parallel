@@ -43,13 +43,13 @@ module.exports = function(grunt) {
     });
 
     var buildArgz = function(obj) {
-      var str = '';
+      var argz = [];
 
       for (var key in obj) {
-        str += '--' + key + '=' + obj[key];
+        argz.push('--' + key + '=' + obj[key]);
       }
 
-      return str;
+      return argz.join(' ');
     };
 
     // If the configuration specifies that the task is a grunt task. Make it so.
